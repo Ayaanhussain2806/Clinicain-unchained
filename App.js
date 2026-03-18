@@ -1,12 +1,15 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./index.css";
-import App from "./App";
+import ConsultationChat from "./components/chat/ConsultationChat";
+import AppointmentScheduler from "./components/AppointmentScheduler";
+import ActivityPanel from "./components/ActivityPanel";
 
-// Create root element and render App
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+function App() {
+  return (
+    <div>
+      <ConsultationChat />
+      <AppointmentScheduler />
+      <ActivityPanel />
+    </div>
+  );
+}
+
+export default App;
