@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Task Manager</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.container {
+    width: 420px;
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+h1 {
+    text-align: center;
+}
+
+.input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    background: #38bdf8;
+    color: black;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #0ea5e9;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: #334155;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-text {
+    cursor: pointer;
+}
+
+.completed {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+.delete-btn {
+    background: #ef4444;
+    color: white;
+    padding: 5px 8px;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+}
+
+.stats {
+    margin-top: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Task Manager</h1>
+
+    <div class="input-box">
+        <input id="taskInput" placeholder="Enter task...">
+        <button onclick="addTask()">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <div class="stats" id="stats"></div>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+// Save to localStorage
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+// Add task
+function addTask() {
+    const input = document.getElementById("taskInput");
+    const value = input.value.trim();
+
+    if (value === "") return;
+
+    const task = {
+        id: Date.now(),
+        text: value,
+        completed: false
+    };
+
+    tasks.push(task);
+    input.value = "";
+
+    saveTasks();
+    renderTasks();
+}
+
+// Toggle complete
+function toggleTask(id) {
+    tasks = tasks.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+    );
+
+    saveTasks();
+    renderTasks();
+}
+
+// Delete task
+function deleteTask(id) {
+    tasks = tasks.filter(task => task.id !== id);
+    saveTasks();
+    renderTasks();
+}
+
+// Render UI
+function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    tasks.forEach(task => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <span class="task-text ${task.completed ? 'completed' : ''}"
+                  onclick="toggleTask(${task.id})">
+                ${task.text}
+            </span>
+            <button class="delete-btn"
+                    onclick="deleteTask(${task.id})">X</button>
+        `;
+
+        list.appendChild(li);
+    });
+
+    updateStats();
+}
+
+// Stats
+function updateStats() {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const pending = total - completed;
+
+    document.getElementById("stats").innerText =
+        `Total: ${total} | Completed: ${completed} | Pending: ${pending}`;
+}
+
+// Initial render
+renderTasks();
+
+// Bonus: Enter key support
+document.getElementById("taskInput")
+    .addEventListener("keypress", function(e) {
+        if (e.key === "Enter") addTask();
+    });
+</script>
+
+</body>
+</html>
