@@ -1,0 +1,224 @@
+# 🎓 Student Management System
+### Spring Boot + JDBC (No ORM) — Mid-Semester Project
+
+---
+
+## 📁 Project Structure
+
+```
+student-management/
+├── pom.xml                              ← Maven dependencies
+├── README.md                            ← You are here
+└── src/
+    └── main/
+        ├── java/com/studentmgmt/
+        │   ├── StudentManagementApplication.java   ← Entry point
+        │   ├── model/
+        │   │   └── Student.java                    ← Data model (POJO)
+        │   ├── repository/
+        │   │   ├── StudentRepository.java          ← Interface (contract)
+        │   │   └── StudentRepositoryImpl.java      ← JDBC implementation
+        │   ├── service/
+        │   │   ├── StudentService.java             ← Interface (contract)
+        │   │   └── StudentServiceImpl.java         ← Business logic
+        │   ├── controller/
+        │   │   └── StudentController.java          ← REST endpoints
+        │   └── exception/
+        │       ├── StudentNotFoundException.java   ← Custom exception
+        │       └── GlobalExceptionHandler.java     ← Error responses
+        └── resources/
+            ├── application.properties              ← DB config
+            └── schema.sql                          ← Table creation + seed data
+```
+
+---
+
+## ⚙️ How the Layers Work Together
+
+```
+HTTP Request
+    ↓
+[Controller]  ← Handles HTTP, validates input, returns JSON
+    ↓
+[Service]     ← Business logic, throws domain exceptions
+    ↓
+[Repository]  ← JDBC SQL queries, maps rows to Student objects
+    ↓
+[Database]    ← H2 (default) or PostgreSQL
+```
+
+---
+
+## 🚀 How to Run (Step by Step)
+
+### Prerequisites
+- Java 17 or later: `java -version`
+- Maven 3.8+: `mvn -version`
+- *(No database installation needed — H2 runs in-memory)*
+
+---
+
+### Step 1 – Clone or Download the Project
+```bash
+# If you have it as a ZIP, unzip it:
+unzip student-management.zip
+cd student-management
+```
+
+### Step 2 – Build the Project
+```bash
+mvn clean install
+```
+*(This downloads dependencies and compiles the code. First run may take ~1 minute.)*
+
+### Step 3 – Run the Application
+```bash
+mvn spring-boot:run
+```
+OR run the JAR directly after building:
+```bash
+java -jar target/student-management-1.0.0.jar
+```
+
+### Step 4 – Verify It's Running
+Open your browser and visit:
+```
+http://localhost:8080/students
+```
+You should see a JSON array with 3 seed students (Alice, Bob, Carol).
+
+---
+
+## 🗄️ H2 Database Console
+
+You can view/query the database directly in the browser:
+
+- URL: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:mem:studentdb`
+- Username: `sa`
+- Password: *(leave blank)*
+
+---
+
+## 📡 API Endpoints
+
+### 1. Create a Student — `POST /students`
+```bash
+curl -X POST http://localhost:8080/students \
+  -H "Content-Type: application/json" \
+  -d '{"name":"David Lee","email":"david@example.com","course":"Machine Learning"}'
+```
+**Response:** `201 Created`
+```json
+{ "id": 4, "name": "David Lee", "email": "david@example.com", "course": "Machine Learning" }
+```
+
+---
+
+### 2. Get All Students — `GET /students`
+```bash
+curl http://localhost:8080/students
+```
+**Response:** `200 OK`
+```json
+[
+  { "id": 1, "name": "Alice Johnson", "email": "alice@example.com", "course": "Computer Science" },
+  { "id": 2, "name": "Bob Smith",     "email": "bob@example.com",   "course": "Data Science" },
+  ...
+]
+```
+
+---
+
+### 3. Get Student by ID — `GET /students/{id}`
+```bash
+curl http://localhost:8080/students/1
+```
+**Response:** `200 OK`
+```json
+{ "id": 1, "name": "Alice Johnson", "email": "alice@example.com", "course": "Computer Science" }
+```
+
+---
+
+### 4. Update a Student — `PUT /students/{id}`
+```bash
+curl -X PUT http://localhost:8080/students/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice Johnson","email":"alice.new@example.com","course":"AI & ML"}'
+```
+**Response:** `200 OK`
+```json
+{ "id": 1, "name": "Alice Johnson", "email": "alice.new@example.com", "course": "AI & ML" }
+```
+
+---
+
+### 5. Delete a Student — `DELETE /students/{id}`
+```bash
+curl -X DELETE http://localhost:8080/students/1
+```
+**Response:** `204 No Content`
+
+---
+
+## ❌ Error Responses
+
+### Student Not Found (404)
+```json
+{
+  "status": 404,
+  "error": "Not Found",
+  "message": "Student not found with id: 99",
+  "timestamp": "2024-04-01T10:15:30"
+}
+```
+
+### Validation Error (400) — e.g., missing name
+```json
+{
+  "status": 400,
+  "error": "Validation Failed",
+  "message": "One or more fields are invalid",
+  "fieldErrors": {
+    "name":  "Name must not be blank",
+    "email": "Email must be a valid email address"
+  },
+  "timestamp": "2024-04-01T10:15:30"
+}
+```
+
+---
+
+## 🐘 Switching to PostgreSQL
+
+1. Install PostgreSQL and create a database:
+   ```sql
+   CREATE DATABASE studentdb;
+   ```
+
+2. In `pom.xml`, comment out H2 and uncomment the PostgreSQL dependency.
+
+3. In `application.properties`, comment out the H2 block and uncomment the PostgreSQL block, filling in your credentials.
+
+4. In `schema.sql`, change `AUTO_INCREMENT` → `SERIAL` for the `id` column.
+
+5. Restart the application.
+
+---
+
+## 🧪 Testing with Postman
+
+Import this base URL: `http://localhost:8080`
+
+| Method | URL                  | Body (JSON)                                  |
+|--------|----------------------|----------------------------------------------|
+| POST   | /students            | `{"name":"...","email":"...","course":"..."}` |
+| GET    | /students            | —                                            |
+| GET    | /students/{id}       | —                                            |
+| PUT    | /students/{id}       | `{"name":"...","email":"...","course":"..."}` |
+| DELETE | /students/{id}       | —                                            |
+
+---
+
+*Built with Spring Boot 3.2 · Java 17 · H2/PostgreSQL · Pure JDBC (no ORM)*
