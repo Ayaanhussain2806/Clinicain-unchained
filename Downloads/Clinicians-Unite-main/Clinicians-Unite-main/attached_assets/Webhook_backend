@@ -1,0 +1,8 @@
+import requests
+
+response = requests.post(
+    "https://your-n8n-instance/webhook/ai-agent",
+    json={"message": "Hello AI"}
+)
+
+print(response.json())

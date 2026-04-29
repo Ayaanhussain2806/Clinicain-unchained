@@ -1,0 +1,11 @@
+fetch("https://your-n8n-instance/webhook/ai-agent", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    message: "Analyze this prescription"
+  })
+})
+.then(res => res.json())
+.then(data => console.log(data));
